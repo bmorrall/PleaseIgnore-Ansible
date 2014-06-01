@@ -1,0 +1,14 @@
+---
+- hosts: machine2
+  sudo: true
+  tasks:
+    - name: checkout spike/nginx-config branch
+      git:
+        repo: https://github.com/bmorrall/PleaseIgnore.git
+        version: spike/nginx-config
+        dest: /apps/please-ignore/source
+
+    - name: build bmorrall/please-ignore image
+      command: docker build -t bmorrall/please-ignore . chdir=/apps/please-ignore/source
+      register: docker
+    - debug: var=docker.stdout_lines

@@ -1,0 +1,20 @@
+---
+- hosts: all
+  sudo: true
+  tasks:
+    - name: start nginx container
+      docker:
+        image: dockerfile/nginx
+        name: nginx
+        ports:
+          - 80:80
+          - 443:443
+        volumes:
+          # - /apps/nginx/sites-enabled:/etc/nginx/sites-enabled
+          - /apps/nginx/logs:/var/log/nginx
+
+    - name: setup write permissions
+      file: path=/apps/nginx/ recurse=yes owner=www-data group=www-data
+
+    - name: allow port 80 through firewall
+      ufw: rule=allow port=80 proto=tcp
