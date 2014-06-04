@@ -16,6 +16,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # doesn't already exist on the user's system.
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
+  config.ansible.groups = {
+    "appservers" => ["machine1"],
+    "webservers" => ["machine1"],
+    "services" => ["machine2"],
+    "all_groups:children" => ["appservers", "webservers", "services"]
+  }
+
   config.vm.define 'machine2' do |machine|
     machine.vm.hostname = 'machine2'
     machine.vm.network "private_network", ip: "192.168.77.22"

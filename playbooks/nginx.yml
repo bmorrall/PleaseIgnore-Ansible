@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: webservers
   sudo: true
   tasks:
     - name: start nginx container

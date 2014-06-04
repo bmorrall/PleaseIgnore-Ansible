@@ -1,5 +1,5 @@
 ---
-- hosts: please-ignore
+- hosts: appservers
   sudo: true
   tasks:
     # - name: create railsapps group
