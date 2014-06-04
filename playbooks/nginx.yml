@@ -13,8 +13,8 @@
           # - /apps/nginx/sites-enabled:/etc/nginx/sites-enabled
           - /apps/nginx/logs:/var/log/nginx
 
-    - name: setup write permissions
-      file: path=/apps/nginx/ recurse=yes owner=www-data group=www-data
+    # - name: setup write permissions
+    #   file: path=/apps/nginx/ recurse=yes owner=www-data group=www-data
 
     - name: allow port 80 through firewall
       ufw: rule=allow port=80 proto=tcp

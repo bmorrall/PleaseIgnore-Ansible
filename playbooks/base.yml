@@ -2,12 +2,14 @@
 - hosts: all
   sudo: true
   tasks:
-
     # Install Docker on Clients
 
     - name: install kernel backports
-      apt: name=linux-image-generic-lts-raring update_cache=yes
-      apt: name=linux-headers-generic-lts-raring update_cache=yes
+      apt: name={{ item }} update_cache=yes
+      apt: name={{ item }} update_cache=yes
+      with_items:
+        - linux-image-generic-lts-raring
+        - linux-headers-generic-lts-raring
       notify:
       - reboot server
 
@@ -29,8 +31,10 @@
     - name: install docker-py
       pip: name=docker-py
 
-    - name: allow port 22 through firewall
-      ufw: rule=allow port=22 proto=tcp state=enabled
+    # Open Required Ports
+
+    - name: allow ssh port through firewall
+      ufw: rule=allow port={{ ansible_ssh_port }} proto=tcp state=enabled
       notify:
       - reboot server
 
@@ -42,4 +46,4 @@
 
     - name: wait for startup
       sudo: false
-      local_action: wait_for host={{ inventory_hostname }} port={{ ansible_ssh_port }} state=started
+      local_action: wait_for host={{ ansible_ssh_host }} port={{ ansible_ssh_port }} state=started

@@ -16,12 +16,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # doesn't already exist on the user's system.
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
-  config.ansible.groups = {
-    "appservers" => ["machine1"],
-    "webservers" => ["machine1"],
-    "services" => ["machine2"],
-    "all_groups:children" => ["appservers", "webservers", "services"]
-  }
+  # config.vm.provision "ansible" do |ansible|
+  #   ansible.groups = {
+  #     "appservers" => ["machine1"],
+  #     "webservers" => ["machine1"],
+  #     "services" => ["machine2"],
+  #     "all_groups:children" => ["appservers", "webservers", "services"]
+  #   }
+  #   ansible.extra_vars = {
+  #     ansible_ssh_user: 'vagrant',
+  #     ansible_ssh_port: 22
+  #   }
+  # 
+  #   ansible.playbook = "playbooks/base.yml"
+  # end
 
   config.vm.define 'machine2' do |machine|
     machine.vm.hostname = 'machine2'
