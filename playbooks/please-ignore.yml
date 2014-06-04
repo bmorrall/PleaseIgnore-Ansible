@@ -1,7 +1,13 @@
 ---
-- hosts: machine2
+- hosts: please-ignore
   sudo: true
   tasks:
+    # - name: create railsapps group
+    #   group: name=railsapps state=present
+    #
+    # - name: create pleaseignore user
+    #   user: name=pleaseignore group=railsapps system=yes state=present
+
     - name: checkout spike/nginx-config branch
       git:
         repo: https://github.com/bmorrall/PleaseIgnore.git
