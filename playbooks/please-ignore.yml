@@ -2,6 +2,15 @@
 - hosts: appservers
   sudo: true
   tasks:
+    - name: checkout bmorrall/docker-baserails repo
+      git:
+        repo: https://github.com/bmorrall/docker-baserails.git
+        version: spike/baserails
+        dest: /apps/bmorrall-baserails/source
+
+    - name: build bmorrall/baserails image
+      command: docker build -t bmorrall/baserails . chdir=/apps/bmorrall-baserails/source
+
     - name: checkout spike/nginx-config branch
       git:
         repo: https://github.com/bmorrall/PleaseIgnore.git
@@ -19,3 +28,18 @@
         name: please-ignore
         ports:
           - 8080:8080
+
+    - name: allow port 8080 through firewall
+      ufw: rule=allow port=8080 proto=tcp
+      notify: reboot server
+
+  handlers:
+    - name: reboot server
+      command: /sbin/reboot
+      notify:
+        - wait for startup
+
+    - name: wait for startup
+      sudo: false
+      local_action: wait_for host={{ ansible_ssh_host }} port={{ ansible_ssh_port }} state=started
+ 
