@@ -1,0 +1,25 @@
+---
+- hosts: services
+  sudo: true
+  tasks:
+    - name: start redis container
+      docker:
+        image: dockerfile/redis
+        name: redis
+        ports:
+          - 6379:6379
+
+    - name: allow port 6379 through firewall
+      ufw: rule=allow port=6379 proto=tcp
+      notify: reboot server
+
+  handlers:
+    - name: reboot server
+      command: /sbin/reboot
+      notify:
+        - wait for startup
+
+    - name: wait for startup
+      sudo: false
+      local_action: wait_for host={{ ansible_ssh_host }} port={{ ansible_ssh_port }} state=started
+  

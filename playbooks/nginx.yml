@@ -2,19 +2,33 @@
 - hosts: webservers
   sudo: true
   tasks:
-    - name: start nginx container
+    - name: remove nginx container
       docker:
         image: dockerfile/nginx
         name: nginx
-        ports:
-          - 80:80
-          - 443:443
-        volumes:
-          # - /apps/nginx/sites-enabled:/etc/nginx/sites-enabled
-          - /apps/nginx/logs:/var/log/nginx
+        state: absent
 
-    # - name: setup write permissions
-    #   file: path=/apps/nginx/ recurse=yes owner=www-data group=www-data
+    # - name: start nginx container
+    #   docker:
+    #     image: dockerfile/nginx
+    #     name: nginx
+    #     ports:
+    #       - 80:80
+    #       - 443:443
+    #     volumes:
+    #       # - /apps/nginx/sites-enabled:/etc/nginx/sites-enabled
+    #       - /apps/nginx/logs:/var/log/nginx
+    # 
+    # - name: allow port 80 through firewall
+    #   ufw: rule=allow port=80 proto=tcp
+    #   notify: reboot server
 
-    - name: allow port 80 through firewall
-      ufw: rule=allow port=80 proto=tcp
+  handlers:
+    - name: reboot server
+      command: /sbin/reboot
+      notify:
+        - wait for startup
+
+    - name: wait for startup
+      sudo: false
+      local_action: wait_for host={{ ansible_ssh_host }} port={{ ansible_ssh_port }} state=started

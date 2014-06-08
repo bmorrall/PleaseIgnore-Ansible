@@ -2,35 +2,74 @@
 - hosts: appservers
   sudo: true
   tasks:
-    - name: checkout bmorrall/docker-baserails repo
+    - name: checkout bmorrall/rails-common repo
       git:
-        repo: https://github.com/bmorrall/docker-baserails.git
+        repo: https://github.com/bmorrall/docker-rails-common.git
         version: spike/baserails
-        dest: /apps/bmorrall-baserails/source
+        dest: /apps/rails-common/src
 
-    - name: build bmorrall/baserails image
-      command: docker build -t bmorrall/baserails . chdir=/apps/bmorrall-baserails/source
+    - name: build bmorrall/rails-common image
+      docker_image:
+        path: /apps/rails-common/src
+        name: bmorrall/rails-common
+        state: present
 
-    - name: checkout spike/nginx-config branch
+    - name: checkout bmorrall/please-ignore repo
       git:
         repo: https://github.com/bmorrall/PleaseIgnore.git
         version: spike/nginx-config
-        dest: /apps/please-ignore/source
+        dest: /apps/please-ignore/src
 
     - name: build bmorrall/please-ignore image
-      command: docker build -t bmorrall/please-ignore . chdir=/apps/please-ignore/source
-      register: docker
-    - debug: var=docker.stdout_lines
+      docker_image:
+        path: /apps/please-ignore/src
+        name: bmorrall/please-ignore
+        state: present
+
+    - name: remove existing container
+      docker:
+        image: bmorrall/please-ignore
+        name: please_ignore
+        state: absent
 
     - name: start bmorrall/please-ignore container
       docker:
         image: bmorrall/please-ignore
-        name: please-ignore
+        name: please_ignore
+        state: running
+        env:
+          - DATABASE_URL=postgres://docker:docker@{{ database_host }}/docker
+          - SECRET_KEY_BASE={{ please_ignore_secret_key }}
+          - DEVISE_SECRET_KEY={{ please_ignore_devise_secret }}
         ports:
           - 8080:8080
+        volumes:
+          - /apps/please-ignore/log:/apps/please-ignore/log
 
-    - name: allow port 8080 through firewall
-      ufw: rule=allow port=8080 proto=tcp
+    - name: setup nginx configuration
+      command: cp /apps/please-ignore/etc/container/staging-nginx-sites.conf /apps/nginx/sites-enabled/default
+
+    - name: stop nginx container
+      docker:
+        image: dockerfile/nginx
+        name: nginx
+        state: absent
+
+    - name: start nginx container
+      docker:
+        image: dockerfile/nginx
+        name: nginx
+        links:
+          - please_ignore
+        ports:
+          - 80:80
+          # - 443:443
+        volumes:
+          - /apps/nginx/sites-enabled:/etc/nginx/sites-enabled
+          - /apps/nginx/logs:/var/log/nginx
+
+    - name: allow port 80 through firewall
+      ufw: rule=allow port=80 proto=tcp
       notify: reboot server
 
   handlers:
