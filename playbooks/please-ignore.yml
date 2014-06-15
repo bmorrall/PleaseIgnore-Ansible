@@ -33,6 +33,8 @@
     #     image: bmorrall/please-ignore
     #     state: running
     #     env:
+    #       - SECRET_KEY_BASE={{ please_ignore_secret_key }}
+    #       - DEVISE_SECRET_KEY={{ please_ignore_devise_secret }}
     #       - DATABASE_URL=postgres://docker:docker@{{ database_host }}/docker
 
     - name: remove existing container
@@ -48,8 +50,11 @@
         state: running
         env:
           - DATABASE_URL=postgres://docker:docker@{{ database_host }}/docker
+          - REDIS_URL=redis://{{ redis_host }}:6379/12/please_ignore
+          - REDIS_CACHE_URL=redis://{{ redis_host }}:6379/0/cache
           - SECRET_KEY_BASE={{ please_ignore_secret_key }}
           - DEVISE_SECRET_KEY={{ please_ignore_devise_secret }}
+          - UNICORN_WORKERS=2
         ports:
           - 80:80
         volumes:
